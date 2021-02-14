@@ -35,23 +35,18 @@ function CheckCrossInstall(props) {
             <div>
               重要：当前的接口测试服务，需安装免费测试增强插件,仅支持 chrome
               浏览器，选择下面任意一种安装方式：
-              <div>
+              {/* <div>
                 <a
                   target="blank"
                   href="https://chrome.google.com/webstore/detail/cross-request/cmnlfmgbjmaciiopcgodlhpiklaghbok?hl=en-US"
                 >
                   [Google 商店获取（需翻墙]
                 </a>
-              </div>
+              </div> */}
               <div>
-                <a target="blank" href="/api/interface/download_crx">
+                <a target="blank" href="https://juejin.im/post/5e3bbd986fb9a07ce152b53d">
                   {' '}
-                  [手动下载]{' '}
-                </a>
-                <span> zip 文件解压后将 crx 文件拖入到 chrome://extensions/ </span>
-                <a target="blank" href="http://www.jianshu.com/p/12ca04c61fc6">
-                  {' '}
-                  [详细安装教程]{' '}
+                  [谷歌请求插件详细安装教程]{' '}
                 </a>
               </div>
             </div>

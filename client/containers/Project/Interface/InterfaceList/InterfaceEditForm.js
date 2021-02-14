@@ -542,17 +542,21 @@ class InterfaceEditForm extends Component {
 
   // 处理批量导入参数
   handleBulkOk = () => {
-    let curValue = this.props.form.getFieldValue(this.state.bulkName);
+    let curValue = this.props.form.getFieldValue(this.state.bulkName)||[];
     // { name: '', required: '1', desc: '', example: '' }
     let newValue = [];
 
     this.state.bulkValue.split('\n').forEach((item, index) => {
       let valueItem = Object.assign({}, curValue[index] || dataTpl[this.state.bulkName]);
-      valueItem.name = item.split(':')[0];
-      valueItem.example = item.split(':')[1] || '';
-      newValue.push(valueItem);
+      let indexOfColon = item.indexOf(':');
+      if (indexOfColon!==-1) {
+        valueItem.name = item.substring(0, indexOfColon);
+        valueItem.example = item.substring(indexOfColon + 1) || '';
+        newValue.push(valueItem);
+      }
     });
 
+    this.props.form.setFieldsValue({[this.state.bulkName]: newValue});
     this.setState({
       visible: false,
       bulkValue: null,
@@ -574,9 +578,11 @@ class InterfaceEditForm extends Component {
     let value = this.props.form.getFieldValue(name);
 
     let bulkValue = ``;
-    value.forEach(item => {
-      return (bulkValue += item.name ? `${item.name}:${item.example || ''}\n` : '');
-    });
+    if(value) {
+      value.forEach(item => {
+        return (bulkValue += item.name ? `${item.name}:${item.example || ''}\n` : '');
+      });
+    }
 
     this.setState({
       visible: true,

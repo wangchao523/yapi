@@ -26,6 +26,22 @@ const compareVersions = require('compare-versions');
           ) {
             Object.assign(res, res.content['application/json']);
             delete res.content;
+          }          
+          if (
+            res.content &&
+            res.content['application/hal+json'] &&
+            typeof res.content['application/hal+json'] === 'object'
+          ) {
+            Object.assign(res, res.content['application/hal+json']);
+            delete res.content;
+          }          
+          if (
+            res.content &&
+            res.content['*/*'] &&
+            typeof res.content['*/*'] === 'object'
+          ) {
+            Object.assign(res, res.content['*/*']);
+            delete res.content;
           }
         });
         if (api.requestBody) {
@@ -88,6 +104,8 @@ const compareVersions = require('compare-versions');
             desc: tag.description
           });
         });
+      }else{
+        res.tags = []
       }
 
       _.each(res.paths, (apis, path) => {
@@ -98,13 +116,15 @@ const compareVersions = require('compare-versions');
           api.method = method;
           let data = null;
           try {
-            data = handleSwagger(api);
+            data = handleSwagger(api, res.tags);
             if (data.catname) {
               if (!_.find(interfaceData.cats, item => item.name === data.catname)) {
-                interfaceData.cats.push({
-                  name: data.catname,
-                  desc: data.catname
-                });
+                if(res.tags.length === 0){
+                  interfaceData.cats.push({
+                    name: data.catname,
+                    desc: data.catname
+                  });
+                }
               }
             }
           } catch (err) {
@@ -126,7 +146,7 @@ const compareVersions = require('compare-versions');
       return interfaceData;
   }
 
-  function handleSwagger(data) {
+  function handleSwagger(data, originTags= []) {
 
     let api = {};
     //处理基本信息
@@ -140,8 +160,20 @@ const compareVersions = require('compare-versions');
         if(/v[0-9\.]+/.test(data.tags[i])){
           continue;
         }
-        api.catname = data.tags[i];
-        break;
+
+        // 如果根路径有 tags，使用根路径 tags,不使用每个接口定义的 tag 做完分类
+        if(originTags.length > 0 && _.find(originTags, item=>{
+          return item.name === data.tags[i]
+        })){
+          api.catname = data.tags[i];
+          break;
+        }
+
+        if(originTags.length === 0){
+          api.catname = data.tags[i];
+          break;
+        }
+        
       }
 
     }
@@ -224,6 +256,9 @@ const compareVersions = require('compare-versions');
             break;
           case 'formData':
             defaultParam.type = param.type === 'file' ? 'file' : 'text';
+			if (param.example) {
+              defaultParam.example = param.example;
+            }
             api.req_body_form.push(defaultParam);
             break;
           case 'header':
